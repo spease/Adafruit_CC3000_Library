@@ -105,8 +105,10 @@ static const uint8_t dreqinttable[] = {
 
 /***********************/
 
-uint8_t pingReportnum;
-netapp_pingreport_args_t pingReport;
+#ifndef CC3000_TINY_DRIVER
+uint8_t g_pingReportCount;
+netapp_pingreport_args_t g_pingReport;
+#endif
 
 #define CC3000_SUCCESS                        (0)
 #define CHECK_SUCCESS(func,Notify,errorCode)  {\
@@ -967,12 +969,15 @@ void CC3000_UsynchCallback(long lEventType, char * data, unsigned char length)
     OkToDoShutDown = 1;
   }
 
+  /*
+  //Not used anymore
   if (lEventType == HCI_EVNT_WLAN_ASYNC_PING_REPORT)
   {
     PRINT_DEBUGLN(F("CC3000: Ping report"));
-    pingReportnum++;
-    memcpy(&pingReport, data, length);
+    g_pingReportCount++;
+    memcpy(&g_pingReport, data, length);
   }
+  */
 
   if (lEventType == HCI_EVNT_BSD_TCP_CLOSE_WAIT) {
     uint8_t socketnum;
@@ -1101,8 +1106,8 @@ uint16_t Adafruit_CC3000::ping(uint32_t ip, uint8_t attempts, uint16_t timeout, 
 
   uint32_t revIP = (ip >> 24) | (ip >> 8) & 0xFF00 | (ip << 8) & 0xFF0000 | (ip << 24);
 
-  pingReportnum = 0;
-  pingReport.packets_received = 0;
+  g_pingReportCount = 0;
+  g_pingReport.packets_received = 0;
 
   PRINT_INFO(F("Pinging ")); printIPdots(revIP); PRINT_DEBUGLN(" ");
   PRINT_DEBUG(attempts); PRINT_DEBUGLN(F(" times"));
@@ -1111,15 +1116,15 @@ uint16_t Adafruit_CC3000::ping(uint32_t ip, uint8_t attempts, uint16_t timeout, 
   delay(timeout*attempts*2);
   PRINT_DEBUGLN(F("Req report"));
   //netapp_ping_report();
-  PRINT_DEBUG(F("Reports: ")); PRINT_DEBUGLN(pingReportnum);
+  PRINT_DEBUG(F("Reports: ")); PRINT_DEBUGLN(g_pingReportCount);
 
-  if (pingReportnum) {
-    PRINT_DEBUG(F("Sent: ")); PRINT_DEBUGLN(pingReport.packets_sent);
-    PRINT_DEBUG(F("Recv: ")); PRINT_DEBUGLN(pingReport.packets_received);
-    PRINT_DEBUG(F("MinT: ")); PRINT_DEBUGLN(pingReport.min_round_time);
-    PRINT_DEBUG(F("MaxT: ")); PRINT_DEBUGLN(pingReport.max_round_time);
-    PRINT_DEBUG(F("AvgT: ")); PRINT_DEBUGLN(pingReport.avg_round_time);
-    return pingReport.packets_received;
+  if (g_pingReportCount) {
+    PRINT_DEBUG(F("Sent: ")); PRINT_DEBUGLN(g_pingReport.packets_sent);
+    PRINT_DEBUG(F("Recv: ")); PRINT_DEBUGLN(g_pingReport.packets_received);
+    PRINT_DEBUG(F("MinT: ")); PRINT_DEBUGLN(g_pingReport.min_round_time);
+    PRINT_DEBUG(F("MaxT: ")); PRINT_DEBUGLN(g_pingReport.max_round_time);
+    PRINT_DEBUG(F("AvgT: ")); PRINT_DEBUGLN(g_pingReport.avg_round_time);
+    return g_pingReport.packets_received;
   } else {
     return 0;
   }
