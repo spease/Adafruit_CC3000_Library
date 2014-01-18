@@ -104,6 +104,33 @@ class Adafruit_CC3000_Client : public Print {
 // header in a later change to make this cleaner.
 #include "Adafruit_CC3000_Server.h"
 
+
+enum PrintLevel
+{
+	CC3000_PRINT_LEVEL_ALL=6,
+	CC3000_PRINT_LEVEL_DEBUG=5,
+	CC3000_PRINT_LEVEL_INFO=4,
+	CC3000_PRINT_LEVEL_WARNING=3,
+	CC3000_PRINT_LEVEL_ERROR=2,
+	CC3000_PRINT_LEVEL_FATAL=1,
+  CC3000_PRINT_LEVEL_NONE=0,
+	CC3000_PRINT_LEVEL_DEFAULT=CC3000_PRINT_LEVEL_NONE,
+};
+PROGMEM static int const CC3000_PRINT_LEVEL_CURRENT=CC3000_PRINT_LEVEL_NONE;
+
+/*
+#define CC3000_PRINT_LEVEL_ALL 0
+#define CC3000_PRINT_LEVEL_DEBUG 1
+#define CC3000_PRINT_LEVEL_INFO 2
+#define CC3000_PRINT_LEVEL_WARNING 3
+#define CC3000_PRINT_LEVEL_ERROR 4
+#define CC3000_PRINT_LEVEL_FATAL 5
+#define CC3000_PRINT_LEVEL_NONE 6
+#ifndef CC3000_PRINT_LEVEL_CURRENT
+#define CC3000_PRINT_LEVEL_CURRENT CC3000_PRINT_LEVEL_NONE
+#endif
+*/
+
 class Adafruit_CC3000 {
   public:
   Adafruit_CC3000(uint8_t csPin, uint8_t irqPin, uint8_t vbatPin, uint8_t spispeed = SPI_CLOCK_DIVIDER);
@@ -160,7 +187,8 @@ class Adafruit_CC3000 {
     bool _initialised;
 
 };
-
+#ifdef CC3000_PRINT_LEVEL_CURRENT > CC3000_PRINT_LEVEL_NONE
 extern Print* CC3KPrinter;
+#endif
 
 #endif
