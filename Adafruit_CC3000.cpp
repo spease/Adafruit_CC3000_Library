@@ -139,9 +139,9 @@ volatile unsigned long ulSmartConfigFinished,
 volatile unsigned char ucStopSmartConfig;
 volatile long ulSocket;
 
-char _deviceName[] = "CC3000";
+char const _deviceName[] = "CC3000";
 char _cc3000_prefix[] = { 'T', 'T', 'T' };
-const unsigned char _smartConfigKey[] = { 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
+unsigned char const _smartConfigKey[] = { 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
                                           0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35 };
                                           // AES key for smart config = "0123456789012345"
 
