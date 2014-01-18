@@ -35,6 +35,7 @@
 #else
   #define SPI_CLOCK_DIVIDER SPI_CLOCK_DIV128
 #endif
+#define CC3000_SOCKET_COUNT_MAX 32
 
 #define WLAN_CONNECT_TIMEOUT 10000  // how long to wait, in milliseconds
 #define RXBUFFERSIZE  64 // how much to buffer on the incoming side
@@ -131,6 +132,8 @@ PROGMEM static int const CC3000_PRINT_LEVEL_CURRENT=CC3000_PRINT_LEVEL_NONE;
 #endif
 */
 
+extern uint32_t ms_closedSockets;
+
 class Adafruit_CC3000 {
   public:
   Adafruit_CC3000(uint8_t csPin, uint8_t irqPin, uint8_t vbatPin, uint8_t spispeed = SPI_CLOCK_DIVIDER);
@@ -183,9 +186,29 @@ class Adafruit_CC3000 {
 
     void setPrinter(Print*);
 
+  protected:
+    static bool closedSocket(int16_t const i_socket)
+    {
+      return (ms_closedSockets & (1<<i_socket)) != 0;
+    }
+    
+    static void setClosedSocket(int16_t const i_socket, bool const i_closed)
+    {
+      if(i_closed)
+      {
+        ms_closedSockets |= (1<<i_socket);
+      } else {
+        ms_closedSockets &= (~(1<<i_socket));
+      }
+    }
+    
   private:
+    static uint32_t ms_closedSockets;
+    
     bool _initialised;
-
+    
+    friend class Adafruit_CC3000_Client;
+    friend void CC3000_UsynchCallback(long lEventType, char * data, unsigned char length);
 };
 #ifdef CC3000_PRINT_LEVEL_CURRENT > CC3000_PRINT_LEVEL_NONE
 extern Print* CC3KPrinter;

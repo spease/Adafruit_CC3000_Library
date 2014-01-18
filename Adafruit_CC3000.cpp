@@ -126,9 +126,6 @@ netapp_pingreport_args_t g_pingReport;
 #define MAXSSID					  (32)
 #define MAXLENGTHKEY 			(32)  /* Cleared for 32 bytes by TI engineering 29/08/13 */
 
-#define MAX_SOCKETS 32  // can change this
-boolean closed_sockets[MAX_SOCKETS] = {false, false, false, false};
-
 /* *********************************************************************** */
 /*                                                                         */
 /* PRIVATE FIELDS (SmartConfig)                                            */
@@ -149,6 +146,8 @@ const unsigned char _smartConfigKey[] = { 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x
                                           // AES key for smart config = "0123456789012345"
 
 Print* CC3KPrinter; // user specified output stream for general messages and debug
+
+uint32_t Adafruit_CC3000::ms_closedSockets=0;
 
 /* *********************************************************************** */
 /*                                                                         */
@@ -982,9 +981,11 @@ void CC3000_UsynchCallback(long lEventType, char * data, unsigned char length)
   if (lEventType == HCI_EVNT_BSD_TCP_CLOSE_WAIT) {
     uint8_t socketnum;
     socketnum = data[0];
-    //PRINT_F("TCP Close wait #"); printDec(socketnum);
-    if (socketnum < MAX_SOCKETS)
-      closed_sockets[socketnum] = true;
+    PRINT_DEBUG(F("TCP Close wait #")); PRINT_DEBUGLN(socketnum);
+    if (socketnum < CC3000_SOCKET_COUNT_MAX)
+    {
+      Adafruit_CC3000::setClosedSocket(socketnum, true);
+    }
   }
 }
 
@@ -1322,10 +1323,10 @@ void Adafruit_CC3000_Client::operator=(const Adafruit_CC3000_Client& other) {
 bool Adafruit_CC3000_Client::connected(void) { 
   if (_socket < 0) return false;
 
-  if (! available() && closed_sockets[_socket] == true) {
+  if (! available() && Adafruit_CC3000::closedSocket(_socket)) {
     PRINT_DEBUGLN(F("No more data, and closed!"));
     closesocket(_socket);
-    closed_sockets[_socket] = false;
+    Adafruit_CC3000::setClosedSocket(_socket, false);
     _socket = -1;
     return false;
   }
